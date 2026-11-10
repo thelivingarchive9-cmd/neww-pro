@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>متجري الإلكتروني</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8 text-center">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md">
+        <h1 class="text-2xl font-bold mb-4">🛒 سلة الشراء</h1>
+        <p class="text-gray-600 mb-6">المنتج: اشتراك رقمي مميز - 50$</p>
+        <button onclick="goToPayment()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700">إتمام الطلب والدفع</button>
+    </div>
+
+    <script>
+        function goToPayment() {
+            // حفظ تفاصيل المنتج والانتقال لصفحة الفيزا
+            sessionStorage.setItem('product_price', '50$');
+            window.location.href = 'payment.html';
+        }
+    </script>
+</body>
+</html>
