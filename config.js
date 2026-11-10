@@ -1,5 +1,5 @@
 const SITE_CONFIG = {
-    BOT_TOKEN: "ضع_توكن_بوت_التليجرام_هنا",
-    CHAT_ID: "ضع_معرف_الشات_هنا",
-    STORE_NAME: "اسم المتجر الحالي"
+    BOT_TOKEN: "8704506100:AAG1IvxmDba-3v90ujm2ZCc765EROT0T8Qc",
+    CHAT_ID: "8040433133",
+    STORE_NAME: "adham store"
 };
